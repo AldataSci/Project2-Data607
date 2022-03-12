@@ -1,0 +1,90 @@
+---
+title: "Airbnb DataSet"
+author: "Al Haque"
+date: "3/10/2022"
+output: html_document
+---
+## Intro: 
+  This is a dataset I found on Kaggle that contains various information on airbnbs in New York City it includes many columns such as host,host_id,what their airbnbs are and how much they charge. I did some various analysis with the helping dplyr and tidyr to help filter out the data. 
+
+```{r}
+library(tidyverse)
+
+housing <- read.csv("https://raw.githubusercontent.com/AldataSci/Project2-Data607/main/AB_NYC_2019.csv",header=TRUE,sep=",")
+
+## I ommited the nas
+housing <- na.omit(housing)
+
+
+head(housing)
+
+```
+
+
+
+## 1. How much did each Various Room Type in New York City cost?
+
+For my analysis I dont really need the Ids of the host or the Housing, nor the latitude or longitude.. I wanted to learn about which various room types in New York City Cost
+
+```{r}
+ 
+## I used dyplr to filter out certain columns and then I graphed the results on a scatterplot to better understand
+## what I am seeing
+
+
+house <- housing %>%
+  select(c(name,host_name,neighbourhood,room_type,price))
+
+ggplot(house,aes(x=room_type,y=price)) +
+  geom_point(col="blue") +
+  labs(title="Scatterplot of Room Type and Price", xlabs="Prices", ylabs= "Type of Airbnbs") + 
+  coord_flip()
+  
+
+```
+
+
+This looks interesting it seems like people charge a lot of money for a private room just as much as an entire home or an apartment which is crazy.We can also see in the data that there are only 3 different kinds of airbnbs in New York City which are a shared room,private room or an entire home/apartment. But to see that people charge 10k for a private room is crazy to me.  
+
+
+## 2. Relationship between borough and price?
+
+ Is there a relationship between borough and price? I selected the relevant data with dplyr which are nbhd group,price and the room type and then I visualized the data with a bar graph to better understand what is it's relationship 
+
+```{r}
+
+
+Nbhd <- housing %>%
+  select(neighbourhood_group,price,room_type)  
+
+
+ggplot(Nbhd,aes(x=room_type,y=price,fill=neighbourhood_group)) + 
+  geom_bar(stat="identity",position=position_dodge(0.9)) +
+  labs(y="Price",x = "Types of Airbnbs in NYC")
+
+```
+
+
+From this bar graph I made I can see that the most expensive airbnbs are located in either Brooklyn and Manhattan with the price topping 10,000 dollars. It may be since Brooklyn and Manhattan are the tourists attractions in NYC and hence are the most expensive. On the other hand we can see that the either boroughs are not that popular and hence the cheapest compared to Brooklyn and Manhattan which makes sense since there isnt nothing that would attract tourists in those boroughs. 
+
+## 3. Comparing airbnbs by Reviews..
+
+Finally I wanted to compare various airbnbs types by averaGE user_ratings and see what would happen
+
+```{r}
+
+review <-housing %>%
+  select(name,neighbourhood_group,room_type,price,number_of_reviews) %>%
+  group_by(neighbourhood_group,room_type) %>%
+  summarise(avg_review = mean(number_of_reviews))
+
+ggplot(review,aes(x=neighbourhood_group,y=avg_review,fill=room_type)) +
+          geom_bar(stat="identity",position=position_dodge(0.9)) +
+          labs(x="Nbhd", y= "Price")
+
+```
+
+
+
+## Conclusion: 
+It's so interesting to find that there was a higher average of reviews for the Bronx and Staten Island compared to Manhattan and Brooklyn, since Manhattan and Brooklyn are popular places to rent an airbnb. It seems like a possibility that the reviews were mostly negative since these two boroughs aren't popular places to rent one. 
