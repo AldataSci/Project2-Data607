@@ -1,0 +1,84 @@
+---
+title: "Project 2 Dataset #3"
+author: "Al Haque"
+date: "3/12/2022"
+output: html_document
+---
+## Intro:
+This data set was taken from Tora's discussion on the week 5 discussion board. This data set focuses on the NYCDOE Data School Quality Report for the school year of 2020-2021.
+
+When we observe the data we can see that there is a lot of columns in this dataset fornatuely we can choose the relevant columns in order to answer the analysis question from Tora 
+
+```{r}
+## Using Tora's dataset to analyze the data
+library(tidyverse)
+school <- read.csv("https://raw.githubusercontent.com/AldataSci/Project2-Data607/main/2020-2021_School_Quality_Reports_-_Early_Childhood_Schools.csv",header=TRUE,sep=",") 
+```
+
+
+## 1. Compare the average student attendance (in-person) to the number of experience with the teachers
+
+Well this is unfortunate, most of the dataset is filled with empty data and thus the analysis will not be as insightful as I thought it would be. Aggregating the dataset by the teacher's experience and arranging it by the attendace we get returned a lot of empty data in that column. 
+
+```{r}
+## Question: Compare the average student attendance (in-person) to the number of experience with the teachers
+
+school %>%
+  select(dbn,school_name,Teach_3_more_exp,n_attendance_inperson_k3_all) %>%
+  group_by(Teach_3_more_exp) %>%
+  arrange(desc(n_attendance_inperson_k3_all))
+
+
+```
+### Filtering Out the No-Data
+  Here I filtered all the no data from the teachers greater than 3 years of experience and avg in person attendance to get some semblance of understanding. Aggregating and arranging the data from teacher's experience after filtering out the No Datas. we can see that there is a positive correlation between teacher's experience and number of in-person attendance. In P.S28 100% of the teachers had teaching experience greater than 3 years and that yielded an average of in-person attendance to 278 students. On the other side, PSX088 which is at the other end of the graph 11% percent of teachers had 3 years of experience and had an average of 11 students attending school in person.This means that teachers with a lot of experience had a greater proficiency of retaining kids to in-person classes.  
+
+
+```{r}
+school %>%
+  select(dbn,school_name,Teach_3_more_exp,n_attendance_inperson_k3_all) %>%
+  group_by(Teach_3_more_exp) %>%
+  arrange(desc(Teach_3_more_exp)) %>%
+  filter(n_attendance_inperson_k3_all != "No Data")
+```
+## 2. Movement of students with disablities to less restrictive enviroments vs. Race of the student
+ In this question I decided to pull out the columns of the school-name,n_Ire_all(movement of students with disabilities to less restrictive environments) and the ethnicity of each race group that attends theses schools. I aggregated the data by n_Ire_all and I arranged in descending order. Here we can see in P.S 112 92 disabled students were moved to less restrictive environments with the majority of those transports being Hispanic students followed by black students.
+ 
+
+```{r}
+school %>%
+  select(dbn,school_name,n_lre_all,ethnicity_asian_pct:ethnicity_white_pct) %>%
+  group_by(n_lre_all) %>%
+  arrange(desc(n_lre_all))
+```
+## 3. Economic Need Index" vs "Number of Remote Learning Days
+
+To answer this question I needed some to understand what an economic need index is acoording to google an economic need index estimates the percentage of students facing economic hardships. With a score of 1.0 being student is elgible for public assistance,lived in a temporary housing in the past few years or has entered nycdoe for the first time and speaks a language other than English. 
+
+
+### Calculating the Days of Remote Learning
+
+  Now this column doesn't exist in the data set so I created a new column called percentage of days that were remote learning. To calculate this I simply mutated the quotient of the avg attendance of students that attended school remotely divided by the total average student attendance to get this value and I put it in a dataframe called School. 
+
+```{r}
+## Mutating a new column to the dataframe School
+School <- school %>%
+  select(dbn,school_name,eni_pct,n_attendance_remote_k3_all,n_attendance_k3_all) %>%
+  mutate(percentage_of_remote_learning_days = n_attendance_remote_k3_all/n_attendance_k3_all)
+
+```
+
+
+### Making sense of the data 
+ According to Google The DoE considers a school to be economically stratified if its economic need is more than 10 percentage points from the citywide average, in either direction. If a school is more than 10 percentage points above the citywide average, it is skewed toward lower incomes; if a school is more than 10 percentage points below the citywide average, it is skewed toward higher incomes.In NYC the average eni_pct is 0.71 Using this information in mind 
+we can deduce that the higher the economic need index were the more students that were taking classes remotely while those with a lower need attended school remotely a bit less frequently. 
+```{r}
+
+School %>%
+  select(dbn,school_name,eni_pct,percentage_of_remote_learning_days) %>%
+  group_by(eni_pct) %>%
+  arrange(desc(percentage_of_remote_learning_days))
+
+```
+## Conclusion: 
+ I think this was a good data set to play around with tidyr and diplyr I was really interested in the dataset Tora had presented in the discussion board mainly because I had a younger brother who has ADHD and the results of the data to me were mainly unsurpising when answering Tora's analysis questions. For instance, teachers that were rather newly-minted or had less experience usually had students that had low attendace rates while students with disablity usually minorites like Hispanic and Blacks were the ones that got transferred a lot. I may play around a bit more with this data because it seems really interesting to fiddle around with the data and gain some even more insights. But Tora's questions were a good place to start analyzing key relationships between ethnicity,income and remote vs.in-person. 
