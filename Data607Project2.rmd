@@ -1,0 +1,99 @@
+---
+title: "Project 2 Dataset I"
+author: "Al Haque"
+date: "3/5/2022"
+output: html_document
+---
+
+## Intro:
+  This data set is a dataset that contains information about users reviews on a particular ramen,the type of ramen,brand of ramen and what country the ramen is from.. This dataset was taken from Kaggle and I got the dataset from my classmate Benson so thanks to Benson I also answered some questions that Benson wanted to analyze and I also got some question from a user called Passerby1 from Kaggle. For this dataset I performed data transformation and analysis to the best of my ability. Unfortunately not much data cleaning was required but there was a lot of observations in the data in which I parsed out using dplyr and tidyr. 
+  
+  
+### Reading the data
+  I removed the Top.Ten and Review columns since they were empty and they weren't much relevant for the data analysis I was performing so I removed it from the dataset. 
+
+```{r}
+## Project 2 Read the text file
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+data <- read.csv("https://raw.githubusercontent.com/AldataSci/Project2-Data607/main/ramen-ratings.csv",header=TRUE,sep=",")
+
+head(data)
+```
+
+
+### Most Reviews given to a particular Ramen Brand 
+  We can use this data set to analyze the favorite favor, best brand, r amen style, and more The most reviews given to a particular Ramen Brand is Nissin Chicken Noodle Soup. 
+```{r}
+
+data %>% 
+  select(-c("Top.Ten","Review..")) %>%
+  group_by(Brand) %>%
+  count(Brand) %>%
+  arrange(desc(n))
+```
+
+
+
+
+### Highest rating of flavors among users (Favorite Variety)
+
+ In order to find the favorite flavors I selected the relevant groups which were Brand, its variety and The rating its received, I grouped the data by its variety and in order to find the favorite flavors I wanted to see which users gave it a higher than a four star rating which would give me an idea that the user really enjoyed this particular flavor and that high rating could signify that it was their favorite flavor after that I counted the variety in that filter and I filter the counts above 1 since one rating means that the user disliked that ramen variety and I arrange it from descending order and I got 5 counts of yakisoba that has gotten a four star rating or above. Now this doesn't mean this is the favorite flavor among users but it tells me that yakisoba variety has been rating pretty highly among users. 
+
+```{r}
+## Analyze the favorite flavor, It seems like yakisoba is the favorite flavor among reviewers
+data %>%
+   select(Brand,Variety,Stars) %>%
+  group_by(Variety) %>%
+  filter(Stars>="4") %>%
+  count(Variety) %>%
+  filter(n>1) %>%
+  arrange(desc(n))
+```
+
+
+### Best rated ramen brand among users
+    
+  In order to find the best rated ramen brand among users I selected the columns that were important i.e Brand,Country and Stars, I then grouped it by Stars and Brand because I needed to group the data by the brand and its rating after than I counted each group and filtered out by Stars and where the counts of the size were greater than 5. After I arranged it from descending order.From the tidying of the data I can see that Nissin has really gotten a mix of good rating ranging from 4 to 5 stars with reviews greater than 20 
+    
+    
+```{r}
+## Finding the best rated ramen brand among users: 
+
+data %>%
+  select(Brand,Country,Stars) %>%
+  group_by(Brand,Stars) %>%
+  summarise(count=n()) %>%
+  filter(Stars>=4.5) %>%
+  filter(count>5) %>%
+  arrange(desc(count))
+```
+
+
+### What country produces the highest amount of ramen products
+
+ I selected the variety and the country, we then group the data by country, I counted each individual country and I arranged by descending order from here We can see that from the data most ramen products that are reviewed are from Japan
+
+```{r}
+
+Countr_y <- data %>% 
+  select(Variety,Country) %>%
+  group_by(Country) %>%
+  count(Country) %>%
+  arrange(desc(n))
+Countr_y
+  
+```
+
+ Here I just made a nice and simple bar graph for the data 
+
+```{r}
+ggplot(data=Countr_y) + 
+  aes(x=Country, y=n) + geom_bar(stat="Identity") +
+  coord_flip()
+```
+
+
+## Conclusion:
+  I had fun cleaning,and tidying Benson's ramen dataset I think its crazy that there is so many variety of ramen brands and styles all over the world. I find it amusing that the second most ramen products ever created is in the US. The fact that many users have reviewed nissin brand of noodle products just shows how popular this brand is all over the country. 
